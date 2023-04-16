@@ -215,6 +215,5 @@ def run_linear_particle_filter_simulation(pf, world_size: np.ndarray, landmarks:
         pf.predict(u)
         pf.update(z)
         estimated_positions.append(np.vstack([pf.particles, pf.weights]).T)
-        print(pf.estimate(),true_pos)
         true_positions.append(true_pos)
     return estimated_positions, true_positions
