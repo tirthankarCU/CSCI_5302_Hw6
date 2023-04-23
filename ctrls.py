@@ -1,5 +1,5 @@
 #  CSCI 4302/5302 Advanced Robotics
-#  Homework 6: Particle Filters [Base Code]
+#  Homework 6: Particle Filters [Base Code v1.1]
 #  (C) 2023, Bradley Hayes (bradley.hayes@colorado.edu)
 
 import numpy as np
@@ -145,6 +145,7 @@ def wrap_angle(angle):
 def visualize_circular_world(robot_position: float, estimates: np.ndarray, landmarks: np.ndarray, world_circumference: float):
     robot_angle = wrap_angle(2 * np.pi * robot_position / world_circumference)
     landmark_angles = wrap_angle(2 * np.pi * np.array(landmarks) / world_circumference)
+    est_angles = wrap_angle(2 * np.pi * np.array(estimates[:,0]) / world_circumference)
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
     ax.set_theta_zero_location("N")
@@ -157,7 +158,7 @@ def visualize_circular_world(robot_position: float, estimates: np.ndarray, landm
     ax.scatter(robot_angle, 1, c='green', marker='o', label='Robot')
 
     if (estimates is not None and estimates.shape[0] > 0):
-        ax.plot([estimates[:,0], estimates[:,0]], [np.zeros_like(estimates[:,1]), estimates[:,1]/np.max(estimates[:,1])], color='red', linewidth=1)
+        ax.plot([est_angles, est_angles], [np.zeros_like(estimates[:,1]), estimates[:,1]/np.max(estimates[:,1])], color='red', linewidth=1)
 
     
 
@@ -195,9 +196,8 @@ def circular_move_robot(true_pos, u, noise_std, world_circumference):
     return np.mod(true_pos + u + np.random.normal(0, noise_std), world_circumference)
 
 def circular_sense_distance(true_pos, landmarks, noise_std, world_circumference):
-    distances_a = np.abs(true_pos - landmarks)
-    distances_b = np.abs(np.mod(-true_pos, world_circumference) - landmarks)
-    min_distance = np.min(np.vstack([distances_a, distances_b]))
+    distances = [np.abs(np.mod(true_pos - landmarks, world_circumference)), np.abs(np.mod(landmarks - true_pos, world_circumference))]
+    min_distance = np.min(distances)
     return min_distance + np.random.normal(0, noise_std)
 
 def run_linear_particle_filter_simulation(pf, world_size: np.ndarray, landmarks: np.ndarray, motion_noise_std: float, sensor_noise_std: float, true_initial_pos: np.ndarray, control_sequence: np.ndarray):
